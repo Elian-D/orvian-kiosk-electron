@@ -2,7 +2,7 @@
 
 appId: com.orvian.kiosk
 productName: ORVIAN Kiosko
-artifactName: Orvian-Kiosko-${version}.${ext} # Generará: Orvian-Kiosko-0.9.0.exe
+artifactName: Orvian-Kiosko-${version}.${ext} 
 copyright: Copyright © 2026 Orvian
 directories:
   output: dist
@@ -10,7 +10,7 @@ directories:
 
 win:
   target: nsis
-  icon: assets/icons/orvian.ico
+  icon: assets/icons/orvian-kiosk.ico
 
 nsis:
   oneClick: true
