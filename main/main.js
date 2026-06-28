@@ -32,7 +32,7 @@ function createWindow() {
         height: 768,
         fullscreen: store.get('display_fullscreen'),
         // Icono definido para la ventana
-        icon: path.join(__dirname, '../assets/icons/orvian.ico'),
+        icon: path.join(__dirname, '../assets/icons/orvian-kiosk.ico'),
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
