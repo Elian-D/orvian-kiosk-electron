@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <!-- CSP que permite estilos locales y scripts modulares -->
+    <meta http-equiv="Content-Security-Policy" 
+        content="default-src 'self'; 
+                style-src 'self' 'unsafe-inline'; 
+                script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'; 
+                connect-src 'self' http://localhost:80 https://orvian.com.do; 
+                img-src 'self' http://localhost:80 https://orvian.com.do https://ui-avatars.com data:;
+                media-src 'self' data:;">
+
+    <title>ORVIAN Kiosko</title>
+    <link href="styles.css" rel="stylesheet">
+    <style>
+        .transition-all-300 { transition: all 0.3s ease-in-out; }
+    </style>
+</head>
+<body class="bg-[#0a0a0b] text-white h-screen overflow-hidden relative select-none">
+    
+    <div id="app" class="flex w-full h-full" data-state="initializing">
+        
+        <div id="scanner-view" class="w-[70%] h-full relative bg-[#0a0a0b] overflow-hidden">
+            <video id="webcam" autoplay playsinline class="w-full h-full object-cover"></video>
+            <canvas id="output-canvas" class="absolute top-0 left-0 w-full h-full pointer-events-none z-10"></canvas>
+            <div id="scanner-flash" class="absolute inset-0 z-30 bg-emerald-500 opacity-0 pointer-events-none transition-opacity duration-150"></div>
+            
+            <div class="absolute top-6 left-6 z-20">
+                <div id="camera-badge" class="flex items-center gap-2 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full border border-[#1e1e21] shadow-lg transition-all-300">
+                    <span id="badge-dot" class="w-2.5 h-2.5 rounded-full bg-yellow-500 animate-pulse"></span>
+                    <span id="badge-text" class="text-xs font-bold tracking-wider uppercase text-gray-300">Inicializando...</span>
+                </div>
+            </div>
+
+            <div id="scanner-prompt" class="absolute bottom-10 left-0 right-0 flex justify-center pointer-events-none z-10 transition-all-300 animate-pulse">
+                <div class="bg-black/50 backdrop-blur-sm px-6 py-3 rounded-xl border border-[#1e1e21] text-center shadow-lg">
+                    <p class="text-sm font-semibold text-gray-200">Por favor, mire fijamente a la cámara</p>
+                </div>
+            </div>
+
+            <div id="processing-overlay" class="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-20 opacity-0 pointer-events-none transition-all-300">
+                <div class="relative w-14 h-14 mb-4">
+                    <div class="absolute inset-0 rounded-full border-4 border-[#f78904]/20"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-[#f78904] border-t-transparent animate-spin"></div>
+                </div>
+                <h2 class="text-lg font-bold text-[#f78904] tracking-wide">Procesando Rostro...</h2>
+            </div>
+
+            <div id="error-overlay" class="absolute inset-0 bg-red-950/90 backdrop-blur-md flex flex-col items-center justify-center z-30 opacity-0 pointer-events-none transition-all-300">
+                <div class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500 flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-black text-red-500 tracking-wider mb-1 uppercase">Acceso no Registrado</h1>
+                <p id="error-message-text" class="text-sm text-red-200/80 max-w-sm text-center px-4 font-medium">Verificando credenciales...</p>
+            </div>
+        </div>
+
+        <div id="student-panel" class="w-[30%] h-full bg-[#111113] border-l border-[#1e1e21] flex flex-col justify-between p-6 shadow-2xl relative z-10 transition-all-300">
+            </div>
+
+    </div>
+
+    <div id="global-overlay" class="fixed inset-0 z-50 bg-[#0a0a0b] flex flex-col items-center justify-center p-6 transition-all-300 hidden">
+        </div>
+
+    <script src="setup-screen.js" type="module"></script>
+</body>
+</html>
