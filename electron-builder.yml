@@ -16,7 +16,7 @@ nsis:
   oneClick: true
   perMachine: false
   allowElevation: true
-  deleteAppDataOnUninstall: true
+  deleteAppDataOnUninstall: false
   artifactName: Orvian-Kiosko-${version}.exe
 
 # Configuración necesaria para electron-updater
