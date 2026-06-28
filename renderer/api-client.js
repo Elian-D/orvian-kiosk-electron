@@ -48,6 +48,26 @@ export class ApiClient {
 
         return resp.json();
     }
+
+    async recordQr(sessionId, qrCode) {
+        const resp = await fetch(`${this.base}/record/qr`, {
+            method: 'POST',
+            headers: {
+                ...this.headers,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                session_id: sessionId,
+                qr_code:    qrCode,
+            }),
+        });
+
+        if (resp.status === 401) {
+            throw new TokenRevokedError();
+        }
+
+        return resp.json();
+    }
 }
 
 export class TokenRevokedError extends Error {
