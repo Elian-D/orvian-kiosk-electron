@@ -1,0 +1,42 @@
+# electron-builder.yml
+
+appId: com.orvian.kiosk
+productName: ORVIAN Kiosko
+artifactName: Orvian-Kiosko-${version}.${ext} # Generará: Orvian-Kiosko-0.9.0.exe
+copyright: Copyright © 2026 Orvian
+directories:
+  output: dist
+  buildResources: assets
+
+win:
+  target: nsis
+  icon: assets/icons/orvian.ico
+
+nsis:
+  oneClick: true
+  perMachine: false
+  allowElevation: true
+  deleteAppDataOnUninstall: true
+  artifactName: Orvian-Kiosko-${version}.exe
+
+# Configuración necesaria para electron-updater
+publish:
+  provider: github
+  owner: Elian-D
+  repo: orvian-kiosk-electron
+
+# Asegurar que los recursos críticos se incluyan en el .exe
+extraResources:
+  - from: vendor/mediapipe
+    to: vendor/mediapipe
+  - from: assets
+    to: assets
+
+files:
+  - "**/*"
+  - "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}"
+  - "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}"
+  - "!dist"
+  - "!build"
+  - "!.git"
+  - "!.vscode"
