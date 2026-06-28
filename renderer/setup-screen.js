@@ -1,12 +1,19 @@
+// renderer\setup-screen.js
 import { ApiClient, TokenRevokedError  } from './api-client.js';
 import { UI } from './ui-states.js';
 import { initFaceDetector, detectLoop } from './camera.js';
 import { showPinGate } from './pin-gate.js';
+import { startQrListener, stopQrListener } from './qr-listener.js'; // ← nuevo
 
 let currentSessionId = null; 
 let localStream = null;
 let lastKnownSchoolName = "Politécnico Orvian";
 let heartbeatInterval = null;
+
+let kioskFeatures = {
+    attendance_qr:     false,
+    attendance_facial: false,
+};
 
 async function showConfigForm() {
     const url = await window.orvianConfig.get('server_url');
@@ -35,45 +42,48 @@ async function showConfigForm() {
 }
 
 async function init() {
-
-    await UI.init();
+    await UI.init(); // inicializar rutas de recursos
 
     const url = await window.orvianConfig.get('server_url');
     const token = await window.orvianConfig.get('kiosk_token');
-    
+
     if (!token) {
         await showConfigForm();
-        return; // Detener ejecución si no hay token
+        return;
     }
-    
+
     const client = new ApiClient(url, token);
-    
+
     try {
+        // MediaPipe solo se inicializa si el plan puede necesitar facial
+        // Se inicializa de forma especulativa — si el plan no lo tiene,
+        // la cámara nunca se enciende pero el detector está listo por si cambia
         await initFaceDetector();
 
         const videoEl = document.getElementById('webcam');
         const canvasEl = document.getElementById('output-canvas');
-        
+
         detectLoop(videoEl, canvasEl, async (activeVideoEl) => {
+            if (!kioskFeatures.attendance_facial) return; // plan no lo tiene, ignorar
             UI.render('processing');
-            
-            // Canvas reducido — 480x360 en vez de 1280x720
             const captureCanvas = document.createElement('canvas');
-            captureCanvas.width = 480;
-            captureCanvas.height = 360;
+            captureCanvas.width = 640;
+            captureCanvas.height = 480;
             const ctx = captureCanvas.getContext('2d');
-            ctx.drawImage(activeVideoEl, 0, 0, 480, 360); // ← escala al dibujar
+            ctx.drawImage(activeVideoEl, 0, 0, 640, 480);
 
             captureCanvas.toBlob(async (blob) => {
                 try {
                     const result = await client.recordFacial(currentSessionId || '0', blob);
                     if (result.success) {
-                        const timeString = new Date().toLocaleTimeString('es-DO', { hour: '2-digit', minute: '2-digit', hour12: true });
-                        UI.render('success', { 
-                            name: result.student.full_name,
+                        const timeString = new Date().toLocaleTimeString('es-DO', {
+                            hour: '2-digit', minute: '2-digit', hour12: true
+                        });
+                        UI.render('success', {
+                            name:      result.student.full_name,
                             photo_url: result.student.photo_url,
-                            time: timeString,
-                            status: result.status || 'Presente'
+                            time:      timeString,
+                            status:    result.status || 'Presente',
                         });
                     } else {
                         UI.render('error', { message: result.message || "No identificado" });
@@ -93,29 +103,46 @@ async function init() {
     }
 }
 
+async function activateKioskMode(client) {
+    if (kioskFeatures.attendance_facial) {
+        await turnOnCamera();
+        startQrListener(client, () => currentSessionId);
+    } else if (kioskFeatures.attendance_qr) {
+        turnOffCamera();
+        UI.renderQrOnly(lastKnownSchoolName);
+        startQrListener(client, () => currentSessionId);
+    } else {
+        UI.render('no_session', { school_name: lastKnownSchoolName });
+    }
+}
+
+function deactivateKioskMode() {
+    stopQrListener();
+    turnOffCamera();
+    UI.render('no_session', { school_name: lastKnownSchoolName });
+}
+
 async function evaluateKioskState(client) {
     try {
         const status = await client.getStatus();
         if (status?.school_name) lastKnownSchoolName = status.school_name;
+        if (status?.features) kioskFeatures = status.features;
+
+        await window.orvianConfig.set('cached_pin_hash', status.pin_hash ?? null);
 
         if (status?.session_active) {
             currentSessionId = status.session_id;
-            await turnOnCamera();
+            await activateKioskMode(client);
         } else {
             currentSessionId = null;
-            turnOffCamera();
+            deactivateKioskMode();
         }
     } catch (err) {
         if (err instanceof TokenRevokedError) {
-            // Detener el heartbeat antes de mostrar el PIN gate
             clearInterval(heartbeatInterval);
-
-            showPinGate(() => {
-                // Callback ejecutado al validar el PIN correctamente
-                showConfigForm();
-            });
+            stopQrListener();
+            showPinGate(() => showConfigForm());
         } else {
-            // Otros errores (red, timeout, etc.) — mostrar estado de error sin salir del kiosko
             console.warn('Error de conexión:', err.message);
         }
     }

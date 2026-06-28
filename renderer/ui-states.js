@@ -10,6 +10,10 @@ export const UI = {
     async init() {
         resourcesBasePath = await window.orvianConfig.getResourcesPath();
     },
+    
+    renderQrOnly(schoolName) {
+        this.render('qr_only', { school_name: schoolName });
+    },
 
     render(state, data = {}) {
         const app = document.getElementById('app');
@@ -40,6 +44,59 @@ export const UI = {
                 // Estado del badge flotante
                 badgeDot.className = "w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse";
                 badgeText.textContent = "Escáner Activo";
+                break;
+
+            case 'qr_only':
+                processingOverlay.classList.add('opacity-0', 'pointer-events-none');
+                errorOverlay.classList.add('opacity-0', 'pointer-events-none');
+                globalOverlay.classList.add('hidden');
+                scannerPrompt.classList.add('opacity-0');
+
+                badgeDot.className = "w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse";
+                badgeText.textContent = "Escáner QR Activo";
+
+                // Reemplazar el área de cámara con panel QR minimalista
+                const scannerView = document.getElementById('scanner-view');
+                if (scannerView && !scannerView.dataset.qrMode) {
+                    scannerView.dataset.qrMode = 'true';
+                    // El video y canvas quedan ocultos — la cámara no está encendida
+                    document.getElementById('webcam').style.display = 'none';
+                    document.getElementById('output-canvas').style.display = 'none';
+
+                    // Panel QR minimalista centrado en el 70%
+                    const qrPanel = document.createElement('div');
+                    qrPanel.id = 'qr-only-panel';
+                    qrPanel.className = `
+                        absolute inset-0 flex flex-col items-center justify-center gap-6
+                        bg-[#0a0a0b]
+                    `;
+                    qrPanel.innerHTML = `
+                        <div class="w-32 h-32 rounded-3xl border-4 border-[#f78904]/30 flex items-center justify-center">
+                            <svg class="w-16 h-16 text-[#f78904]/60" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621
+                                    0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125
+                                    1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5Z
+                                    M3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621
+                                    0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125
+                                    1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5Z
+                                    M13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621
+                                    0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125
+                                    1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.75h.75v.75h-.75v-.75ZM16.75 6.75h.75v.75h-.75v-.75Z
+                                    M13.5 13.5h.75v.75H13.5v-.75ZM13.5 19.5h.75v.75H13.5v-.75Z
+                                    M16.5 16.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75Z
+                                    M19.5 19.5h.75v.75h-.75v-.75Z" />
+                            </svg>
+                        </div>
+                        <div class="text-center space-y-1">
+                            <p class="text-sm font-bold text-gray-300">Acerque el carnet al lector</p>
+                            <p class="text-xs text-gray-600">${data.school_name || 'Registro de Asistencia'}</p>
+                        </div>
+                    `;
+                    scannerView.appendChild(qrPanel);
+                }
                 break;
 
             case 'processing':

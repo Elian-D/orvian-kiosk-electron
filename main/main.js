@@ -80,3 +80,10 @@ app.on('will-quit', () => {
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
 });
+
+autoUpdater.on('checking-for-update', () => console.log('Buscando actualizaciones...'));
+autoUpdater.on('update-available', (info) => console.log('Actualización disponible:', info.version));
+autoUpdater.on('update-not-available', () => console.log('App al día'));
+autoUpdater.on('download-progress', (p) => console.log(`Descargando: ${Math.round(p.percent)}%`));
+autoUpdater.on('update-downloaded', () => console.log('Lista para instalar'));
+autoUpdater.on('error', (err) => console.error('Error de update:', err));
