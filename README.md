@@ -207,12 +207,32 @@ orvian-kiosk-electron/
 │       └── models/
 │           └── blaze_face_short_range.tflite
 │
-└── assets/
-    ├── sounds/
-    │   ├── success.wav           # Feedback de éxito (volumen 80%)
-    │   └── error.wav             # Feedback de error (volumen 30%)
-    └── icons/
-        └── orvian.ico
+├── assets/
+│   ├── sounds/
+│   │   ├── success.wav           # Feedback de éxito (volumen 80%)
+│   │   └── error.wav             # Feedback de error (volumen 30%)
+│   └── icons/
+│       │
+│       ├── orv ian-kiosk.ico      ← usa Electron
+│       ├── orvian-kiosk.icns     ← futuro macOS
+│       └── png/
+│           ├── icon_256.png
+│           ├── icon_128.png
+│           ├── icon_64.png
+│           ├── icon_48.png
+│           ├── icon_32.png
+│           ├── icon_24.png
+│           └── icon_16.png
+└── design/
+   │
+   ├── README.md
+   ├── description.png
+   │
+   ├── figma/
+   │   └── orvian-kiosk-icon.fig
+   │
+   └── svg/
+       └── orvian-kiosk-icon.svg
 ```
 
 ---

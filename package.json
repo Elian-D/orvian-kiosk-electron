@@ -1,6 +1,6 @@
 {
   "name": "orvian-kiosk-electron",
-  "version": "0.9.1",
+  "version": "1.0.0",
   "main": "main/main.js",
   "scripts": {
     "start": "electron .",
